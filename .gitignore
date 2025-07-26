@@ -1,4 +1,5 @@
 # Untracked utils
+.DS_Store
 __pycache__
 .ipynb_checkpoints
 venv
@@ -8,3 +9,7 @@ venv
 
 # Incomplete files
 fmm.ipynb
+
+# Data files
+*.csv
+*.xlsx
