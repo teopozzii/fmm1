@@ -1,0 +1,10 @@
+# Untracked utils
+__pycache__
+.ipynb_checkpoints
+venv
+
+# Private env
+.env
+
+# Incomplete files
+fmm.ipynb
