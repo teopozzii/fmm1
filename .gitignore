@@ -11,5 +11,6 @@ venv
 fmm.ipynb
 
 # Data files
+data/
 *.csv
 *.xlsx

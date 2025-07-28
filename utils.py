@@ -28,7 +28,9 @@ def get_fundamentals(ticker, function='o'):
     data = r.json()
     time.sleep(5) # To avoid hitting the API rate limit; needed?
 
-    if function != 'OVERVIEW' and 'annualReports' in data:
+    if function != 'OVERVIEW' and 'quarterlyReports' in data:
+        return data['quarterlyReports']
+    elif function != 'OVERVIEW' and 'annualReports' in data:
         return data['annualReports']
     else:
         return data
