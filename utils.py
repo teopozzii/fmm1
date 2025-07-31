@@ -3,6 +3,9 @@ import time
 import requests
 from dotenv import load_dotenv
 import os
+import glob
+from pathlib import Path
+from datetime import date
 
 load_dotenv()
 API_KEY = os.getenv('ALPHA_VANTAGE_API_KEY')  # Ensure the API key is loaded from .env
@@ -36,6 +39,38 @@ def get_fundamentals(ticker, function='o'):
     else:
         return data
     
+def load_fundamentals(current_df: pd.DataFrame | None = None) -> pd.DataFrame:
+    """
+    Return a DataFrame containing the latest fundamentals data,
+    falling back from today's file ➜ most-recent dated file ➜ legacy file.
+    """
+    today       = date.today().isoformat()
+    data_root   = Path("data")
+    today_dir   = data_root / today
+
+    # 1️⃣  today’s file
+    today_file  = today_dir / f"fundamentals_{today}.csv"
+
+    # 2️⃣  most-recent dated file in any sub-directory
+    pattern     = str(data_root / "*" / "fundamentals_*.csv")
+    dated_files = glob.glob(pattern)
+    most_recent = max(dated_files, default=None, key=Path) if dated_files else None
+
+    # 3️⃣  legacy top-level file
+    legacy_file = data_root / "fundamentals.csv"
+
+    for candidate in (today_file, most_recent, legacy_file):
+        if candidate and Path(candidate).exists():
+            latest = pd.read_csv(candidate)
+            break
+    else:                              # --> no file found
+        raise FileNotFoundError("No fundamentals file available.")
+
+    # 4️⃣ to link the currently loaded data with the already existing one
+    if current_df is not None and not current_df.empty:
+        latest = pd.concat([current_df, latest])
+
+    return latest
 
 def compute_book_value_per_share(fundamentals):
     """
