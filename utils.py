@@ -62,6 +62,7 @@ def load_fundamentals(current_df: pd.DataFrame | None = None) -> pd.DataFrame:
     for candidate in (today_file, most_recent, legacy_file):
         if candidate and Path(candidate).exists():
             latest = pd.read_csv(candidate)
+            latest.drop(columns=latest.filter(regex=r"^Unnamed").columns, inplace=True, errors="ignore")
             break
     else:                              # --> no file found
         raise FileNotFoundError("No fundamentals file available.")
@@ -69,6 +70,9 @@ def load_fundamentals(current_df: pd.DataFrame | None = None) -> pd.DataFrame:
     # 4️⃣ to link the currently loaded data with the already existing one
     if current_df is not None and not current_df.empty:
         latest = pd.concat([current_df, latest])
+        latest.drop(columns=latest.filter(regex=r"^Unnamed").columns, inplace=True, errors="ignore")
+        latest.drop(columns='index', inplace=True, errors="ignore")
+        latest.reset_index(drop = True, inplace=True)
 
     return latest
 
