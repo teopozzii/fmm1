@@ -6,6 +6,9 @@ import os
 import glob
 from pathlib import Path
 from datetime import date
+from IPython.core.magic import (Magics, magics_class, cell_magic)
+from IPython import get_ipython
+import psutil
 
 load_dotenv()
 API_KEY = os.getenv('ALPHA_VANTAGE_API_KEY')  # Ensure the API key is loaded from .env
@@ -61,7 +64,7 @@ def load_fundamentals(current_df: pd.DataFrame | None = None) -> pd.DataFrame:
 
     for candidate in (today_file, most_recent, legacy_file):
         if candidate and Path(candidate).exists():
-            latest = pd.read_csv(candidate)
+            latest = pd.read_csv(candidate, na_values=['-']) # void values found in some rows
             latest.drop(columns=latest.filter(regex=r"^Unnamed").columns, inplace=True, errors="ignore")
             break
     else:                              # --> no file found
@@ -132,3 +135,22 @@ def next_quarter(date: str):
     else:
         raise ValueError("Something wrong with the date!")
     return datenew
+
+@magics_class
+class TrafficMagic(Magics):
+
+    @cell_magic
+    def nettraffic(self, line, cell):
+        net_io_start = psutil.net_io_counters()
+
+        exec(cell, globals())  # esegue il contenuto della cella
+
+        net_io_end = psutil.net_io_counters()
+        sent_diff = (net_io_end.bytes_sent - net_io_start.bytes_sent) / (1024 ** 2)
+        recv_diff = (net_io_end.bytes_recv - net_io_start.bytes_recv) / (1024 ** 2)
+
+        print(f"{sent_diff:.2f} MB inviati; {recv_diff:.2f} MB ricevuti.")
+
+def register_traffic_magic():
+    ip = get_ipython()
+    ip.register_magics(TrafficMagic)
