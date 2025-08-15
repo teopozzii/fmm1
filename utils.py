@@ -143,7 +143,7 @@ class TrafficMagic(Magics):
     def nettraffic(self, line, cell):
         net_io_start = psutil.net_io_counters()
 
-        exec(cell, globals())  # esegue il contenuto della cella
+        exec(cell, get_ipython().user_ns)  # esegue il contenuto della cella
 
         net_io_end = psutil.net_io_counters()
         sent_diff = (net_io_end.bytes_sent - net_io_start.bytes_sent) / (1024 ** 2)

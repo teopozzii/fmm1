@@ -13,6 +13,7 @@ fmm.ipynb
 # Data files
 data/
 *.csv
+*.txt
 *.xlsx
 
 # Theory and other readings
